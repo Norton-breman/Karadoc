@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Paramètres{% endblock %}
+{% block content %}
+    <h2><i class="fas fa-cog"></i> Paramètres</h2>
+    <ul class="liste-parametres">
+        <li>
+            <a href="{{ url_for('wifi.wifi_settings') }}">
+                <i class="fas fa-wifi"></i> Paramètres WiFi
+                {% if current_wifi %}
+                    <br><small>Connecté: {{ current_wifi }}</small>
+                {% else %}
+                    <br><small>Non connecté</small>
+                {% endif %}
+            </a>
+        </li>
+        <li>
+            <a href="{{ url_for('bluetooth.bluetooth_settings') }}">
+                <i class="fab fa-bluetooth"></i> Paramètres Bluetooth
+                {% if connected_bluetooth %}
+                    <br><small>{{ connected_bluetooth|length }} appareil(s) connecté(s)</small>
+                {% else %}
+                    <br><small>Aucun appareil connecté</small>
+                {% endif %}
+            </a>
+        </li>
+    </ul>
+{% endblock %}

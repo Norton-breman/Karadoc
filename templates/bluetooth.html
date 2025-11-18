@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}Paramètres Bluetooth{% endblock %}
+{% block content %}
+    <h2><i class="fab fa-bluetooth"></i> Paramètres Bluetooth</h2>
+    
+    {% if success %}
+    <div style="background: #06d6a0; color: white; padding: 1em; margin: 1em auto; width: 300px; border-radius: 1em; text-align: center;">
+        <strong>{{ success }}</strong>
+    </div>
+    {% endif %}
+    
+    {% if error %}
+    <div style="background: #f582ae; color: white; padding: 1em; margin: 1em auto; width: 300px; border-radius: 1em; text-align: center;">
+        <strong>{{ error }}</strong>
+    </div>
+    {% endif %}
+    
+    <!-- Appareils connectés -->
+    {% if connected_devices %}
+    <div class="bluetooth-section">
+        <h3>🟢 Appareils connectés</h3>
+        {% for device in connected_devices %}
+        <div class="bluetooth-device connected">
+            <div class="device-info">
+                <div class="device-name">
+                    {% if device.device_type == 'audio' %}🎧{% else %}📱{% endif %}
+                    {{ device.name }}
+                </div>
+                <div class="device-details">
+                    {{ device.mac }} | Connecté
+                </div>
+            </div>
+            <div class="device-actions">
+                <form method="POST" action="{{ url_for('bluetooth.bluetooth_disconnect') }}" style="display: inline;">
+                    <input type="hidden" name="mac" value="{{ device.mac }}">
+                    <button type="submit" class="btn-disconnect">Déconnecter</button>
+                </form>
+                <form method="POST" action="{{ url_for('bluetooth.bluetooth_remove') }}" style="display: inline;">
+                    <input type="hidden" name="mac" value="{{ device.mac }}">
+                    <button type="submit" class="btn-remove" onclick="return confirm('Supprimer cet appareil ?')">Supprimer</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Scan et appareils disponibles -->
+    <div class="bluetooth-section">
+        <h3>🔍 Appareils disponibles <a href="{{ url_for('bluetooth.bluetooth_settings') }}" style="font-size: 0.8em;">(Rafraîchir)</a></h3>
+        
+        {% if devices %}
+            {% for device in devices %}
+            {% if not device.connected %}
+            <div class="bluetooth-device">
+                <div class="device-info">
+                    <div class="device-name">
+                        {% if device.device_type == 'audio' %}🎧{% elif device.device_type == 'input' %}⌨️{% else %}📱{% endif %}
+                        {{ device.name }}
+                        {% if device.paired %}<span class="paired-badge">Apparié</span>{% endif %}
+                    </div>
+                    <div class="device-details">
+                        {{ device.mac }} | {{ device.security if device.security else 'Bluetooth' }}
+                    </div>
+                </div>
+                <div class="device-actions">
+                    {% if not device.paired %}
+                        <form method="POST" action="{{ url_for('bluetooth.bluetooth_pair') }}" style="display: inline;">
+                            <input type="hidden" name="mac" value="{{ device.mac }}">
+                            <button type="submit" class="btn-pair">Appairer</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('bluetooth.bluetooth_connect') }}" style="display: inline;">
+                            <input type="hidden" name="mac" value="{{ device.mac }}">
+                            <button type="submit" class="btn-connect">Connecter</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('bluetooth.bluetooth_remove') }}" style="display: inline;">
+                            <input type="hidden" name="mac" value="{{ device.mac }}">
+                            <button type="submit" class="btn-remove" onclick="return confirm('Supprimer cet appareil ?')">Supprimer</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>Recherche d'appareils en cours... <a href="{{ url_for('bluetooth.bluetooth_settings') }}">Rafraîchir</a></p>
+            <p><small>Assurez-vous que vos appareils sont en mode découverte/appairage.</small></p>
+        {% endif %}
+    </div>
+
+<style>
+.bluetooth-section {
+    max-width: 700px;
+    margin: 2em auto;
+}
+
+.bluetooth-device {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    margin: 0.8em 0;
+    padding: 1em;
+    border-radius: 1em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.bluetooth-device:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.bluetooth-device.connected {
+    border-left: 4px solid #06d6a0;
+    background: #f0fff4;
+}
+
+.device-info {
+    flex: 1;
+}
+
+.device-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #001858;
+    margin-bottom: 0.3em;
+}
+
+.device-details {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.paired-badge {
+    background: #06d6a0;
+    color: white;
+    font-size: 0.7em;
+    padding: 0.2em 0.5em;
+    border-radius: 1em;
+    margin-left: 0.5em;
+}
+
+.device-actions {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+}
+
+.btn-pair, .btn-connect {
+    background: #06d6a0;
+    color: white;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s;
+}
+
+.btn-pair:hover, .btn-connect:hover {
+    background: #05a57e;
+}
+
+.btn-disconnect {
+    background: #ffd166;
+    color: #001858;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s;
+}
+
+.btn-disconnect:hover {
+    background: #fcbf49;
+}
+
+.btn-remove {
+    background: #f582ae;
+    color: white;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s;
+}
+
+.btn-remove:hover {
+    background: #e91e63;
+}
+
+@media (max-width: 600px) {
+    .bluetooth-device {
+        flex-direction: column;
+        gap: 1em;
+    }
+    
+    .device-actions {
+        justify-content: center;
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

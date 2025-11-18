@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Paramètres WiFi{% endblock %}
+{% block content %}
+    <h2><i class="fas fa-wifi"></i> Paramètres WiFi</h2>
+    
+    {% if current_wifi %}
+    <div style="background: #06d6a0; color: white; padding: 1em; margin: 1em auto; width: 300px; border-radius: 1em; text-align: center;">
+        <strong>Connecté à: {{ current_wifi }}</strong>
+    </div>
+    {% endif %}
+    
+    {% if error %}connections.connections.
+    <div style="background: #f582ae; color: white; padding: 1em; margin: 1em auto; width: 300px; border-radius: 1em; text-align: center;">
+        <strong>{{ error }}</strong>
+    </div>
+    {% endif %}
+    
+    <div class="wifi-networks">
+        <h3>Réseaux disponibles</h3>
+        
+        {% if networks %}
+            {% for network in networks %}
+            <div class="wifi-network" onclick="connectToWifi('{{ network.ssid }}', {{ network.secured|tojson }})">
+                <div class="network-info">
+                    <div class="network-name">
+                        {% if network.secured %}🔒{% else %}📶{% endif %} 
+                        {{ network.ssid }}
+                    </div>
+                    <div class="network-details">
+                        Signal: {{ network.signal }}% | {{ network.security }}
+                    </div>
+                </div>
+                <div class="signal-bars">
+                    {% set signal_level = (network.signal|int / 25)|round %}
+                    {% for i in range(4) %}
+                        <div class="bar {% if i < signal_level %}active{% endif %}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>Aucun réseau WiFi trouvé. <a href="{{ url_for('connections.wifi_settings') }}">Rafraîchir</a></p>
+        {% endif %}
+    </div>
+
+<!-- Modal pour saisir le mot de passe -->
+<div id="passwordModal" class="photo-modal" style="display: none;">
+    <div style="background: white; color: #001858; padding: 2em; border-radius: 1em; margin: 20vh auto; width: 300px; position: relative;">
+        <h3 style="margin-top: 0;">Se connecter à <span id="networkName"></span></h3>
+        <form method="POST" action="{{ url_for('connections.wifi_connect') }}">
+            <input type="hidden" id="ssidInput" name="ssid" value="">
+            <label for="password">Mot de passe :</label><br>
+            <input type="password" id="passwordInput" name="password" style="width: 100%; padding: 0.5em; margin: 0.5em 0; box-sizing: border-box;">
+            <br>
+            <button type="submit" style="background: #06d6a0; color: white; border: none; padding: 0.5em 1em; border-radius: 0.5em; cursor: pointer; margin-right: 0.5em;">Se connecter</button>
+            <button type="button" onclick="closePasswordModal()" style="background: #f582ae; color: white; border: none; padding: 0.5em 1em; border-radius: 0.5em; cursor: pointer;">Annuler</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function connectToWifi(ssid, secured) {
+    if (secured) {
+        document.getElementById('networkName').textContent = ssid;
+        document.getElementById('ssidInput').value = ssid;
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordModal').style.display = 'block';
+        document.getElementById('passwordInput').focus();
+    } else {
+        // Réseau ouvert, connexion directe
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("wifi.wifi_connect") }}';
+        
+        const ssidInput = document.createElement('input');
+        ssidInput.type = 'hidden';
+        ssidInput.name = 'ssid';
+        ssidInput.value = ssid;
+        form.appendChild(ssidInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+}
+
+// Fermer le modal en cliquant à côté
+document.getElementById('passwordModal').addEventListener('click', function(e) {
+    if (e.target === this) closePasswordModal();
+});
+</script>
+
+<style>
+.wifi-networks {
+    max-width: 600px;
+    margin: 2em auto;
+}
+
+.wifi-network {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    margin: 0.5em 0;
+    padding: 1em;
+    border-radius: 1em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wifi-network:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.network-info {
+    flex: 1;
+}
+
+.network-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #001858;
+}
+
+.network-details {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 0.2em;
+}
+
+.signal-bars {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+}
+
+.bar {
+    width: 6px;
+    background: #ddd;
+    border-radius: 1px;
+}
+
+.bar:nth-child(1) { height: 8px; }
+.bar:nth-child(2) { height: 12px; }
+.bar:nth-child(3) { height: 16px; }
+.bar:nth-child(4) { height: 20px; }
+
+.bar.active {
+    background: #06d6a0;
+}
+</style>
+{% endblock %}
