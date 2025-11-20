@@ -47,7 +47,7 @@
 <div id="passwordModal" class="photo-modal" style="display: none;">
     <div style="background: white; color: #001858; padding: 2em; border-radius: 1em; margin: 20vh auto; width: 300px; position: relative;">
         <h3 style="margin-top: 0;">Se connecter à <span id="networkName"></span></h3>
-        <form method="POST" action="{{ url_for('connections.wifi_connect') }}">
+        <form method="POST" action="{{ url_for('wifi.wifi_connect') }}">
             <input type="hidden" id="ssidInput" name="ssid" value="">
             <label for="password">Mot de passe :</label><br>
             <input type="password" id="passwordInput" name="password" style="width: 100%; padding: 0.5em; margin: 0.5em 0; box-sizing: border-box;">

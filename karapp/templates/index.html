@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Accueil{% endblock %}
+{% block content %}
+
+<div class="cardlist">
+    <a href="{{ url_for('categorie', nom='photo') }}" class="card root" style="background-color:#8bd3dd">
+        <i class="fas fa-camera"></i><br>Photos
+    </a>
+    <a href="{{ url_for('categorie', nom='musique') }}" class="card root" style="background-color:#f3d2c1">
+        <i class="fas fa-music"></i><br>Musique
+    </a>
+    <a href="{{ url_for('categorie', nom='podcast') }}" class="card root" style="background-color:#cddafd">
+        <i class="fas fa-podcast"></i><br>Podcast
+    </a>
+  </div>
+
+{% endblock %}

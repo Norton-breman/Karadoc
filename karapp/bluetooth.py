@@ -83,7 +83,7 @@ def _get_bt_manager():
     global _bt_manager
     if _bt_manager is None:
         try:
-            from bluetooth_manager import BluetoothManager
+            from karapp.bluetooth_manager import BluetoothManager
             _bt_manager = BluetoothManager()
         except Exception as e:
             print(f"Erreur lors de l'initialisation du gestionnaire Bluetooth: {e}")

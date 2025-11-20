@@ -5,7 +5,7 @@ from werkzeug.serving import make_server
 from dotenv import load_dotenv
 
 # Importer l'application Flask
-from app import app
+from karapp.app import app
 
 load_dotenv()
 

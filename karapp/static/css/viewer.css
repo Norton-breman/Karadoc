@@ -1,0 +1,65 @@
+/* Modal pour affichage des photos en grand */
+.photo-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+}
+
+.photo-modal img {
+  display: block;
+  margin: auto;
+  max-width: 90%;
+  max-height: 90%;
+  margin-top: 5vh;
+  border-radius: 0.5em;
+}
+
+.photo-modal:hover {
+  cursor: zoom-out;
+}
+
+.photo-close {
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.photo-close:hover {
+  color: #f582ae;
+}
+
+.photo-navigation {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 10px;
+  user-select: none;
+  transition: color 0.3s;
+}
+
+.photo-navigation:hover {
+  color: #f582ae;
+}
+
+.photo-prev {
+  left: 20px;
+}
+
+.photo-next {
+  right: 20px;
+}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Ajouter une source{% endblock %}
+{% block content %}
+  <div class="recherche-rss">
+    <h2><i class="fas fa-search"></i> Rechercher un podcast</h2>
+    {% for t in searchtools %}
+    <h3> {{ t }}</h3>
+    <form action="{{ url_for('recherche_podcast') }}" method="post">
+      <input type="text" name="podcast_name" placeholder="la discomobile" required>
+      <input type="hidden" name="searchtool" value="{{ t }}">
+      <button type="submit">Rechercher</button>
+    </form>
+    {% endfor %}
+
+    {% if resultats is defined %}
+      <h3>Résultats trouvés :</h3>
+
+      {% if resultats %}
+        <div class="cardlist">
+          {% for r in resultats %}
+            <div class="card" style="
+           {% if r.image %}
+             background-image: url('{{ r.image }}');
+             background-size: cover;
+             background-position: center;
+           {% else %}
+             background-color: {{ ['#FFD166','#06D6A0','#118AB2','#EF476F','#073B4C'] | random }};
+           {% endif %}
+         ">
+              <div class="overlay">
+                <span class="nom-source">{{ r.titre or "Flux RSS" }}</span><br>
+                <form action="{{ url_for('add_podcast') }}" method="post">
+                  <input type="hidden" name="nom" value="{{ r.titre or 'Flux RSS' }}">
+                  <input type="hidden" name="url" value="{{ r.flux_rss }}">
+                  <button type="submit" class="btn-ajouter"><i class="fas fa-plus"></i> Ajouter</button>
+                </form>
+              </div>
+              <div> </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>Aucun flux RSS trouvé pour ce site.</p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endblock %}

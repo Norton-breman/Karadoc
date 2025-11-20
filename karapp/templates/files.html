@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Categorie{% endblock %}
+{% block content %}
+<!-- Inclure le CSS du lecteur -->
+{% if cat in ['musique', 'podcast']%}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}">
+{% else %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer.css') }}">
+{% endif %}
+
+<div class="cardlist">
+    {% for i in items %}
+        {% if 'file' in i.type %}
+            {% if cat in ['musique', 'podcast']%}
+                <div class="card-with-label">
+                    <a class="card file"
+                       style="{% if i.artwork %}background-image: url('data:image/jpeg;base64,{{ i.artwork }}');{% else %}background-color: #f5f5f5;{% endif %};"
+                       data-track-url="{{ url_for('serve_file', filename=i.path, type=music) }}"
+                       data-track-title="{{ i.name if i.name else i.path|basename }}"
+                       data-track-artist="{{ i.artist if i.artist else '' }}"
+                       data-track-artwork="{{ i.artwork if i.artwork else '' }}">
+                    </a>
+                    <p class="card-label">{{ i.name }}</p>
+                </div>
+                {% else %}
+                <a class="card file"
+                   data-photo-url="{{ url_for('serve_file', filename=i.path, type=photo) }}"
+                   data-photo-index="{{ loop.index0 }}"
+                   style="{% if i.artwork %}background-image: url('data:image/jpeg;base64,{{ i.artwork }}');{% else %}background-color: #f5f5f5;{% endif %}">
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{{ url_for('categorie', nom=cat, parent_id=i.id) }}" class="card" style="background-color:#C4AA14">
+                <div class="overlay">
+                    <p>
+                        {{ i.name }}
+                    </p>
+                </div>
+            </a>
+        {% endif %}
+    {% endfor %}
+    {% if 'podcast' in cat %}
+        <a href="{{ url_for('add_podcast') }}" class="card add-card"><i class="fas fa-plus"></i><br>Ajouter</a>
+    {% endif %}
+  </div>
+{% if cat in ['musique', 'podcast']%}
+<!-- Modal du lecteur audio -->
+    <div id="playerModal" class="player-modal">
+        <span class="player-close">&times;</span>
+        <div class="player-container">
+            <!-- Artwork -->
+            <div id="trackArtwork" class="player-artwork"></div>
+
+            <!-- Informations de la piste -->
+            <div class="player-info">
+                <h2 id="trackTitle">Titre de la piste</h2>
+                <p id="trackArtist">Artiste</p>
+            </div>
+
+            <!-- Contrôles de navigation -->
+            <div class="player-navigation">
+                <button id="prevBtn">⏮</button>
+                <button id="playPauseBtn">▶️</button>
+                <button id="nextBtn">⏭</button>
+            </div>
+
+            <!-- Timeline -->
+            <div class="player-timeline">
+                <input type="range" id="timeline" class="timeline-bar" min="0" max="100" value="0">
+            </div>
+
+            <!-- Temps de lecture -->
+            <div class="player-time">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+
+            <!-- Contrôles de volume -->
+            <div class="player-volume">
+                <button id="volumeDownBtn">🔉</button>
+                <span id="volumeLevel">100%</span>
+                <button id="volumeUpBtn">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Élément audio caché -->
+    <audio id="audioPlayer"></audio>
+
+    <!-- Inclure le JavaScript du lecteur -->
+    <script src="{{ url_for('static', filename='js/player.js') }}"></script>
+{% else %}
+    <!-- Modal pour afficher les photos en grand -->
+    <div id="photoModal" class="photo-modal">
+        <span class="photo-close">&times;</span>
+        <div class="photo-navigation photo-prev">&#10094;</div>
+        <div class="photo-navigation photo-next">&#10095;</div>
+        <img id="modalImage" src="" alt="Photo">
+    </div>
+    <script src="{{ url_for('static', filename='js/viewer.js') }}"></script>
+{% endif %}
+{% endblock %}

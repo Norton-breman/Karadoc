@@ -1,0 +1,132 @@
+body {
+    font-family: 'Comic Neue', sans-serif;
+    background-color: #fef6e4;
+    color: #001858;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+header {
+    position: relative;
+    background-color: #fef6e4;
+    color: white;
+    padding: 1em;
+    font-size: 1.5em;
+}
+
+h2 {
+    color: #001858;
+    margin-top: 30px;
+}
+
+.settings {
+    position: absolute;
+    right: 20px;
+    top: 5px;
+    color: grey;
+    font-size: 1.5em;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.settings:hover {
+    transform: rotate(90deg) scale(1.2);
+}
+
+.liste-parametres {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.liste-parametres li {
+    background-color: #f3d2c1;
+    margin: 10px auto;
+    width: 250px;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.cardlist {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1em;
+  padding: 1em;
+}
+
+.card {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  align-items: center;
+  border-radius: 1em;
+  overflow: hidden;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+}
+
+.card .overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.5);
+  text-align: center;
+  padding: 0.5em 0;
+}
+
+.card.add-card {
+  background: #a7c957;
+  color: white;
+  font-size: 1.2em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card.root {
+  font-size: 1.2em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-with-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* centre horizontalement la carte et le label */
+  gap: 0.5rem;            /* espace entre carte et texte */
+}
+
+.card.file {
+  width: 150px;
+  height: 150px;
+  border-radius: 1em;
+  background-size: cover;
+  background-position: center;
+  display: block;         /* lien comme bloc */
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.card-label {
+  margin: 0;
+  text-align: center;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.95rem;
+  word-break: break-all;  /* si noms longs */
+}

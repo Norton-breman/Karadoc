@@ -1,0 +1,238 @@
+/**
+ * Styles pour le lecteur audio modal
+ */
+
+/* Modal du lecteur */
+.player-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Conteneur du lecteur */
+.player-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fef6e4;
+    border-radius: 1.5em;
+    padding: 2em;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Bouton de fermeture */
+.player-close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+    z-index: 1001;
+}
+
+.player-close:hover {
+    color: #f582ae;
+}
+
+/* Artwork de la piste */
+.player-artwork {
+    width: 100%;
+    height: 300px;
+    border-radius: 1em;
+    background-size: cover;
+    background-position: center;
+    background-color: #f3d2c1;
+    margin-bottom: 1.5em;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Informations de la piste */
+.player-info {
+    text-align: center;
+    margin-bottom: 1.5em;
+}
+
+.player-info h2 {
+    margin: 0;
+    color: #001858;
+    font-size: 1.5em;
+    margin-bottom: 0.3em;
+}
+
+.player-info p {
+    margin: 0;
+    color: #666;
+    font-size: 1.1em;
+}
+
+/* Contrôles de navigation */
+.player-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+    margin-bottom: 1.5em;
+}
+
+.player-navigation button {
+    background: #f582ae;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-navigation button:hover {
+    background: #e56d96;
+    transform: scale(1.1);
+}
+
+#playPauseBtn {
+    width: 70px;
+    height: 70px;
+    font-size: 2em;
+    background: #06d6a0;
+}
+
+#playPauseBtn:hover {
+    background: #05a57e;
+}
+
+/* Timeline */
+.player-timeline {
+    margin-bottom: 1em;
+}
+
+.timeline-bar {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #ddd;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.timeline-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #f582ae;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.timeline-bar::-webkit-slider-thumb:hover {
+    background: #e56d96;
+}
+
+.timeline-bar::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #f582ae;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s;
+}
+
+.timeline-bar::-moz-range-thumb:hover {
+    background: #e56d96;
+}
+
+/* Temps de lecture */
+.player-time {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 1em;
+}
+
+/* Contrôles de volume */
+.player-volume {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+}
+
+.player-volume button {
+    background: #8bd3dd;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-volume button:hover {
+    background: #6cc2ce;
+    transform: scale(1.1);
+}
+
+.player-volume span {
+    color: #001858;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .player-container {
+        width: 95%;
+        padding: 1.5em;
+    }
+
+    .player-artwork {
+        height: 250px;
+    }
+
+    .player-info h2 {
+        font-size: 1.2em;
+    }
+
+    .player-info p {
+        font-size: 1em;
+    }
+
+    .player-navigation button {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3em;
+    }
+
+    #playPauseBtn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.8em;
+    }
+}
