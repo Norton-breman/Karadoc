@@ -128,5 +128,25 @@ h2 {
   color: #000;
   font-weight: 600;
   font-size: 0.95rem;
-  word-break: break-all;  /* si noms longs */
+  max-width: calc(150px * 1.1);  /* 20% de plus */
+  white-space: normal;       /* permet les retours à la ligne */
+}
+
+.card.selectable {
+    position: relative; /* IMPORTANT : permet au checkbox d’être positionné dans la carte */
+}
+
+.card-checkbox {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+
+    width: 20px;
+    height: 20px;
+
+    cursor: pointer;
+    z-index: 10;
+
+    /* Optionnel : style personnalisé */
+    accent-color: #4caf50;
 }

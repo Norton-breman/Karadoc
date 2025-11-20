@@ -2,9 +2,10 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 import requests
-import base64
+from threading import Thread
+import uuid
 
-from flask import Flask, render_template, redirect, url_for, request, send_from_directory
+from flask import Flask, render_template, redirect, url_for, request, send_from_directory, jsonify
 from werkzeug.utils import secure_filename
 
 from karapp.wifi import connection_bp, get_current_wifi
@@ -19,6 +20,8 @@ load_dotenv()
 DATA_PATH = os.getenv('DATA_PATH')
 DB_PATH = os.path.join(os.getenv('DB_PATH'), 'karapp.db')
 
+tasks_progress = {}
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+DB_PATH
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -29,7 +32,7 @@ db.init_app(app)
 
 # if not os.path.exists(DB_PATH):
 with app.app_context():
-    db.drop_all()
+    # db.drop_all()
     db.create_all()
 
 @app.route('/')
@@ -114,49 +117,8 @@ def serve_file(filename):
 def add_podcast():
     if request.method == 'POST':
         url = request.form['url']
-
-        infos = rss.get_infos(url)
-        path = Path(DATA_PATH)/ 'podcast'/ secure_filename(infos['titre'])
-        path.mkdir(exist_ok=True)
-        artwork = make_artwork_base64(infos['image'],size=150)
-        dir_model = FileModel(
-            type='dir',
-            category='podcast',
-            path=str(path),
-            name=infos['titre'],
-            artwork=artwork,
-            url=url,
-            description=infos['description']
-        )
-        db.session.add(dir_model)
-        for each in rss.get_episodes_list(url):
-            print(each['titre'])
-            epath = path/secure_filename(f"{each['titre']}.mp3")
-            ep_url = each['audio']
-            try:
-                response = requests.get(ep_url)
-                response.raise_for_status()
-            except Exception as e:
-                print(f"Erreur de téléchargement : {e}")
-                continue
-            with open(epath, "wb") as f:
-                f.write(response.content)
-
-                epModel = FileModel(
-                    type='file',
-                    category='podcast',
-                    path=str(epath),
-                    name=each['titre'],
-                    artwork=make_artwork_base64(each['image'],size=150),
-                    url=ep_url,
-                    description=each['description'],
-                    parent=dir_model.id
-                )
-                db.session.add(epModel)
-
-        db.session.commit()
-        models = FileModel.query.filter_by(category='podcast').all()
-        return render_template('files.html', cat='podcast', items=models)
+        episodes = rss.get_episodes_list(url)
+        return render_template('select_ep.html', podcast=url, episodes=episodes)
     else:
         tool_list = rss.list_tools()
         return render_template('add_rss.html', searchtools=tool_list)
@@ -168,6 +130,102 @@ def podcast_search():
     tool = rss.get_tool_by_name(search_tool_name)
     resultats = tool.search(podcast_name)
     return render_template("add_rss.html", resultats=resultats)
+
+@app.post('/download_podcast')
+def download_podcast():
+    selected = request.form.getlist("selected")
+    podcast_url = request.form['playlist_url']
+
+    task_id = str(uuid.uuid4())
+    tasks_progress[task_id] = 0
+
+    # Lancer le téléchargement dans un thread
+    thread = Thread(target=download_worker, args=(task_id, selected, podcast_url), daemon=True)
+    thread.start()
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"task_id": task_id})
+    # Retourner la page avec la barre de progression
+    return render_template("progress.html", task_id=task_id)
+
+def download_worker(task_id, selected, podcast_url):
+    """
+    Worker exécuté dans un thread séparé.
+    IMPORTANT : on doit recréer un app_context pour pouvoir utiliser `db` et d'autres
+    objets Flask/SQAlchemy en toute sécurité.
+    """
+    with app.app_context():   # <-- s'assurer d'avoir le contexte Flask
+        # Récup infos du podcast
+        infos = rss.get_infos(podcast_url)
+
+        # dossier de sauvegarde
+        path = Path(DATA_PATH) / 'podcast' / secure_filename(infos['titre'])
+        dir_model = FileModel.query.filter_by(path=str(path)).first()
+        if not dir_model:
+            path.mkdir(parents=True, exist_ok=True)
+
+            # artwork et model de dossier
+            artwork = make_artwork_base64(infos.get('image'), size=150)
+            dir_model = FileModel(
+                type='dir',
+                category='podcast',
+                path=str(path),
+                name=infos['titre'],
+                artwork=artwork,
+                url=podcast_url,
+                description=infos.get('description')
+            )
+            db.session.add(dir_model)
+            db.session.commit()
+        else:
+            print('%s existe' %infos['titre'])
+
+        episodes = rss.get_episodes_list(podcast_url) or []
+        # total d'épisodes sélectionnés (éviter division par 0)
+        total = sum(1 for ep in episodes if ep['titre'] in selected)
+        if total == 0:
+            tasks_progress[task_id] = 100
+            return
+
+        done = 0
+        for each in episodes:
+            epModel = FileModel.query.filter_by(parent=dir_model.id, name=each['titre']).first()
+            if each['titre'] not in selected or epModel is not None:
+                if epModel is not None:
+                    print('%s déjà en mémoire' %each['titre'])
+                continue
+
+            epath = path / secure_filename(f"{each['titre']}.mp3")
+            ep_url = each.get('audio')
+            response = requests.get(ep_url, timeout=30)
+            response.raise_for_status()
+
+            with open(epath, "wb") as f:
+                f.write(response.content)
+
+            epModel = FileModel(
+                type='file',
+                category='podcast',
+                path=str(epath),
+                name=each['titre'],
+                artwork=make_artwork_base64(each.get('image'), size=150),
+                url=ep_url,
+                description=each.get('description'),
+                parent=dir_model.id
+            )
+            db.session.add(epModel)
+            db.session.commit()
+            # Mettre à jour la progression
+            done += 1
+            # calcul safe (entier)
+            tasks_progress[task_id] = int(done * 100 / total)
+
+        # fin du travail
+        tasks_progress[task_id] = 100
+
+@app.get("/progress/<task_id>")
+def progress(task_id):
+    return jsonify({"progress": tasks_progress.get(task_id, 0)})
 
 @app.template_filter('basename')
 def basename_filter(path):

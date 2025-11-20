@@ -9,6 +9,16 @@
 {% endif %}
 
 <div class="cardlist">
+    {% if items|length > 0 %}
+    {% set first = items | first %}
+    {% if first %}
+      {% set parent = first.parent %}
+    {% else %}
+      {% set parent = None %}
+    {% endif %}
+    {% else %}
+      {% set parent = None %}
+    {% endif %}
     {% for i in items %}
         {% if 'file' in i.type %}
             {% if cat in ['musique', 'podcast']%}
@@ -39,7 +49,7 @@
             </a>
         {% endif %}
     {% endfor %}
-    {% if 'podcast' in cat %}
+    {% if 'podcast' in cat and not parent%}
         <a href="{{ url_for('add_podcast') }}" class="card add-card"><i class="fas fa-plus"></i><br>Ajouter</a>
     {% endif %}
   </div>

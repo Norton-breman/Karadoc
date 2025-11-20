@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Accueil{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/progress.css') }}">
+
+<h2> Episodes à ajouter</h2>
+<div>
+    <form id="episodes-form" action="{{ url_for('download_podcast') }}" method="POST">
+        <input type="hidden" name="playlist_url" value="{{ podcast }}">
+        <div class="cardlist">
+            {% for ep in episodes %}
+                <div class="card-with-label">
+                    <a class="card file selectable"
+                        style="
+                       {% if ep.image %}
+                         background-image: url('{{ ep.image }}');
+                         background-size: cover;
+                         background-position: center;
+                       {% else %}
+                         background-color: {{ ['#FFD166','#06D6A0','#118AB2','#EF476F','#073B4C'] | random }};
+                       {% endif %}
+                     ">
+                        <input type="checkbox" name="selected" class="card-checkbox" value="{{ ep.titre }}" checked>
+                    </a>
+                    <p class="card-label">{{ ep.titre }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        <a>
+            <button type="submit" class="btn">Ajouter les épisodes sélectionnés</button>
+        </a>
+    </form>
+</div>
+
+<!-- Modal Progress -->
+<div id="progress-modal" class="modal hidden">
+    <div class="modal-content">
+        <h3>Téléchargement en cours…</h3>
+
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <p id="progress-text">0%</p>
+    </div>
+</div>
+
+<script>
+document.getElementById("episodes-form").addEventListener("submit", async function(e) {
+    e.preventDefault(); // empêcher soumission classique
+
+    const form = e.target;
+
+    // Afficher le modal
+    document.getElementById("progress-modal").classList.remove("hidden");
+
+    const formData = new FormData(form);
+
+    // Envoyer en AJAX
+    const response = await fetch(form.action, {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    });
+
+    const data = await response.json();
+    const taskId = data.task_id;
+
+    // Mettre à jour la barre de progression
+    async function updateProgress() {
+        const r = await fetch(`/progress/${taskId}`);
+        const p = (await r.json()).progress;
+
+        document.getElementById("progress-bar").style.width = p + "%";
+        document.getElementById("progress-text").innerText = p + "%";
+
+        if (p >= 100) {
+            document.getElementById("progress-text").innerText = "Terminé !";
+            setTimeout(() => {
+                window.location.href = "{{ url_for('categorie', nom='podcast') }}";
+            }, 1000);
+        } else {
+            setTimeout(updateProgress, 300);
+        }
+    }
+
+    updateProgress();
+});
+</script>
+{% endblock %}
