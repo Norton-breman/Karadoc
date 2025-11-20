@@ -1,6 +1,8 @@
 import pkgutil
 import importlib
 import inspect
+import feedparser
+
 from karapp.tools.rss.base import RssSearchTool
 
 # Charger dynamiquement tous les modules du package rss
@@ -33,3 +35,19 @@ def list_tools():
                 instance = obj()
                 tools.append(instance.name)
     return tools
+
+
+def get_infos(url):
+    feed = feedparser.parse(url)
+    return {
+        'titre': feed.feed.get('title', 'Sans titre'),
+        'description': feed.feed.get('subtitle', ''),
+        'image': getattr(feed.feed, 'image', {}).get('href', '')
+    }
+
+def get_episodes_list(url):
+    feed = feedparser.parse(url)
+    return [
+        {'titre': e.title, 'audio': e.enclosures[0].href if e.enclosures else None,
+         'image': e.image.href if e.image else None, 'description': e.summary if e.summary else ''}
+        for e in feed.entries]

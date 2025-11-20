@@ -1,8 +1,11 @@
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+import requests
+import base64
 
 from flask import Flask, render_template, redirect, url_for, request, send_from_directory
+from werkzeug.utils import secure_filename
 
 from karapp.wifi import connection_bp, get_current_wifi
 from karapp.bluetooth import  bluetooth_bp, get_connected_bluetooth_devices
@@ -26,7 +29,7 @@ db.init_app(app)
 
 # if not os.path.exists(DB_PATH):
 with app.app_context():
-    # db.drop_all()
+    db.drop_all()
     db.create_all()
 
 @app.route('/')
@@ -41,8 +44,7 @@ def parametres():
 
 @app.route('/sync_db', endpoint='db_sync')
 def synd_db():
-    cat = os.listdir(DATA_PATH)
-    for each in cat:
+    for each in ['photo', 'musique']:
         p = Path(DATA_PATH)/each
         # ajouter les nouveaux fichiers
         for f in p.rglob('*'):
@@ -92,7 +94,6 @@ def synd_db():
 
 @app.route('/categorie/<nom>')
 def categorie(nom):
-    print(nom)
     parent_id = request.args.get('parent_id')
     models = FileModel.query.filter_by(category=nom, parent=parent_id).all()
     return render_template('files.html', cat=nom, items=models)
@@ -112,11 +113,61 @@ def serve_file(filename):
 @app.route('/add_podcast', methods=['GET', 'POST'])
 def add_podcast():
     if request.method == 'POST':
-        return render_template('files.html', cat='podcast', items=[])
+        url = request.form['url']
+
+        infos = rss.get_infos(url)
+        path = Path(DATA_PATH)/ 'podcast'/ secure_filename(infos['titre'])
+        path.mkdir(exist_ok=True)
+        artwork = make_artwork_base64(infos['image'],size=150)
+        dir_model = FileModel(
+            type='dir',
+            category='podcast',
+            path=str(path),
+            name=infos['titre'],
+            artwork=artwork,
+            url=url,
+            description=infos['description']
+        )
+        db.session.add(dir_model)
+        for each in rss.get_episodes_list(url):
+            print(each['titre'])
+            epath = path/secure_filename(f"{each['titre']}.mp3")
+            ep_url = each['audio']
+            try:
+                response = requests.get(ep_url)
+                response.raise_for_status()
+            except Exception as e:
+                print(f"Erreur de téléchargement : {e}")
+                continue
+            with open(epath, "wb") as f:
+                f.write(response.content)
+
+                epModel = FileModel(
+                    type='file',
+                    category='podcast',
+                    path=str(epath),
+                    name=each['titre'],
+                    artwork=make_artwork_base64(each['image'],size=150),
+                    url=ep_url,
+                    description=each['description'],
+                    parent=dir_model.id
+                )
+                db.session.add(epModel)
+
+        db.session.commit()
+        models = FileModel.query.filter_by(category='podcast').all()
+        return render_template('files.html', cat='podcast', items=models)
     else:
         tool_list = rss.list_tools()
         return render_template('add_rss.html', searchtools=tool_list)
 
+@app.route("/podcast_search", methods=["POST"])
+def podcast_search():
+    podcast_name = request.form.get("podcast_name")
+    search_tool_name = request.form.get("searchtool")
+    tool = rss.get_tool_by_name(search_tool_name)
+    resultats = tool.search(podcast_name)
+    return render_template("add_rss.html", resultats=resultats)
 
 @app.template_filter('basename')
 def basename_filter(path):

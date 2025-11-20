@@ -5,7 +5,7 @@
     <h2><i class="fas fa-search"></i> Rechercher un podcast</h2>
     {% for t in searchtools %}
     <h3> {{ t }}</h3>
-    <form action="{{ url_for('recherche_podcast') }}" method="post">
+    <form action="{{ url_for('podcast_search') }}" method="post">
       <input type="text" name="podcast_name" placeholder="la discomobile" required>
       <input type="hidden" name="searchtool" value="{{ t }}">
       <button type="submit">Rechercher</button>
@@ -30,7 +30,6 @@
               <div class="overlay">
                 <span class="nom-source">{{ r.titre or "Flux RSS" }}</span><br>
                 <form action="{{ url_for('add_podcast') }}" method="post">
-                  <input type="hidden" name="nom" value="{{ r.titre or 'Flux RSS' }}">
                   <input type="hidden" name="url" value="{{ r.flux_rss }}">
                   <button type="submit" class="btn-ajouter"><i class="fas fa-plus"></i> Ajouter</button>
                 </form>

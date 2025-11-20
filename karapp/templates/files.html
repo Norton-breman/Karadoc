@@ -30,7 +30,7 @@
                 </a>
             {% endif %}
         {% else %}
-            <a href="{{ url_for('categorie', nom=cat, parent_id=i.id) }}" class="card" style="background-color:#C4AA14">
+            <a href="{{ url_for('categorie', nom=cat, parent_id=i.id) }}" class="card" style="{% if i.artwork %}background-image: url('data:image/jpeg;base64,{{ i.artwork }}');{% else %}background-color: #C4AA14;{% endif %}">
                 <div class="overlay">
                     <p>
                         {{ i.name }}
@@ -43,7 +43,7 @@
         <a href="{{ url_for('add_podcast') }}" class="card add-card"><i class="fas fa-plus"></i><br>Ajouter</a>
     {% endif %}
   </div>
-{% if cat in ['musique', 'podcast']%}
+{% if cat in ['musique', 'podcast'] %}
 <!-- Modal du lecteur audio -->
     <div id="playerModal" class="player-modal">
         <span class="player-close">&times;</span>

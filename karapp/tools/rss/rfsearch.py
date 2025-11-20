@@ -2,7 +2,7 @@ from urllib.parse import urlencode
 import requests
 import json
 
-from rss.base import RssSearchTool
+from karapp.tools.rss.base import RssSearchTool
 
 class RadioFranceSearchTool(RssSearchTool):
 

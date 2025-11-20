@@ -1,11 +1,17 @@
 from PIL import Image
 import base64
 import io
+import requests
 
 
 def make_artwork_base64(path, size=300, quality=60):
     # Charge l’image
-    img = Image.open(path)
+    if 'http' in path:
+        response = requests.get(path)
+        response.raise_for_status()
+        img = Image.open(io.BytesIO(response.content))
+    else:
+        img = Image.open(path)
 
     # Resize pour réduire fortement le poids
     img.thumbnail((size, size))
